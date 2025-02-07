@@ -59,63 +59,63 @@
 		let userMessage = selectedMessage || input;
 		if (!userMessage) return;
 
-		// Add the user's message
 		messages.update((msgs) => [
 			...msgs,
 			{ role: 'user', content: userMessage, timestamp: formatTime() }
 		]);
-		console.log('chatContainer: ', chatContainer);
-		console.log('chatContainer.scrollHeight: ', chatContainer.scrollHeight);
-		setTimeout(() => {
-			if (chatContainer) {
-				chatContainer.scrollTop = chatContainer.scrollHeight;
-			}
-		}, 50);
 		input = '';
 		isTyping.set(true);
 		showOptions.set(false);
 
-		const res = await fetch('/api/chat', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ messages: [...$messages, { role: 'user', content: userMessage }] })
-		});
+		try {
+			const res = await fetch('/api/chat', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ messages: [...$messages, { role: 'user', content: userMessage }] })
+			});
 
-		const data = await res.json();
-		console.log('data: ', data);
-		isTyping.set(false);
+			// ✅ Check if the response is valid JSON
+			const text = await res.text();
+			try {
+				const data = JSON.parse(text);
 
-		// ✅ Handle multiple AI responses (in case of split messages)
-		if (Array.isArray(data)) {
-			for (let i = 0; i < data.length; i++) {
-				const message = data[i];
-				console.log('Processing message: ', message);
-
-				// ✅ Reduce delay from 1200ms to 700ms for a faster response flow
-				await new Promise((resolve) => setTimeout(resolve, i === 0 ? 400 : 700));
-
+				if (Array.isArray(data)) {
+					for (let i = 0; i < data.length; i++) {
+						await new Promise((resolve) => setTimeout(resolve, i === 0 ? 400 : 1200));
+						messages.update((msgs) => [
+							...msgs,
+							{ role: 'assistant', content: data[i].content, timestamp: formatTime() }
+						]);
+					}
+				} else {
+					messages.update((msgs) => [
+						...msgs,
+						{ role: 'assistant', content: data.content, timestamp: formatTime() }
+					]);
+				}
+			} catch (error) {
+				console.error('Invalid JSON response:', text);
 				messages.update((msgs) => [
 					...msgs,
-					{ role: 'assistant', content: message.content, timestamp: formatTime() }
-				]);
-
-				setTimeout(() => {
-					if (chatContainer) {
-						chatContainer.scrollTop = chatContainer.scrollHeight;
+					{
+						role: 'assistant',
+						content: 'Oops! Something went wrong. Try again.',
+						timestamp: formatTime()
 					}
-				}, 50);
+				]);
 			}
-		} else {
+		} catch (error) {
+			console.error('API call failed:', error);
 			messages.update((msgs) => [
 				...msgs,
-				{ role: 'assistant', content: data.content, timestamp: formatTime() }
-			]);
-
-			setTimeout(() => {
-				if (chatContainer) {
-					chatContainer.scrollTop = chatContainer.scrollHeight;
+				{
+					role: 'assistant',
+					content: "I couldn't reach the server. Please try again later.",
+					timestamp: formatTime()
 				}
-			}, 50);
+			]);
+		} finally {
+			isTyping.set(false);
 		}
 	}
 
