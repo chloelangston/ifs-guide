@@ -18,7 +18,7 @@ export const POST: RequestHandler = async ({ request }) => {
             Encourage curiosity rather than judgment. Keep your responses warm, non-directive, and trauma-informed.
             Follow IFS best practices and give IFS-centered suggestions for exercises when needed.
             
-            ⚡  **Be Concise:** Keep responses clear and concise when possible.  
+            ⚡  **Be Concise:** Keep responses clear and concise when possible and under 1000 characters.  
             🔄 **Encourage Back-and-Forth:** Keep replies **clear and interactive** to promote natural conversation flow.  
             
             ⚠ **IFS Guidelines & Safety:**  
@@ -31,8 +31,9 @@ export const POST: RequestHandler = async ({ request }) => {
         const chatMessages = [systemMessage, ...messages];
 
         const response = await openai.chat.completions.create({
-            model: 'gpt-4',
-            messages: chatMessages
+            model: 'gpt-4-turbo',
+            messages: chatMessages,
+            max_tokens: 300
         });
 
         console.log("response.choices: ", response.choices);
@@ -76,4 +77,9 @@ function splitMessage(text: string, maxLength: number): string[] {
     if (currentChunk.trim()) chunks.push(currentChunk.trim());
     return chunks;
 }
+
+export const config = {
+    runtime: "nodejs",  // ✅ Ensure using Node.js runtime
+    maxDuration: 30     // ✅ Allow up to 30 seconds (instead of default 10s)
+};
 
