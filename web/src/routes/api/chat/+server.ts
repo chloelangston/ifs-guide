@@ -79,7 +79,7 @@ function splitMessage(text: string, maxLength: number): string[] {
 }
 
 export const config = {
-    runtime: "nodejs18.x",  // ✅ Ensure using Node.js runtime
+    runtime: "nodejs20.x",  // ✅ Ensure using Node.js runtime
     maxDuration: 30     // ✅ Allow up to 30 seconds (instead of default 10s)
 };
 
