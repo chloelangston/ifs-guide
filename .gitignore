@@ -1,0 +1,9 @@
+node_modules/
+web/node_modules/
+native/node_modules/
+.svelte-kit/
+native/platforms/
+dist/
+build/
+.vscode/
+.DS_Store
