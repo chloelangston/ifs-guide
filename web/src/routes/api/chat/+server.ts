@@ -47,6 +47,7 @@ export const POST: RequestHandler = async ({ request }) => {
 
         // ✅ Split message into chunks if too long (optional)
         const shortResponses = splitMessage(aiMessage, 500);
+        console.log("shortResponses: ", shortResponses)
 
         // ✅ Return as JSON array for the frontend
         return json(shortResponses.map(text => ({ role: "assistant", content: text })));
@@ -61,25 +62,34 @@ export const POST: RequestHandler = async ({ request }) => {
  * ✅ Utility function to split messages at natural breakpoints
  */
 function splitMessage(text: string, maxLength: number): string[] {
-    const sentences = text.split(/(?<!\d)\. /); // ✅ Split at full stops, but NOT at numbers like "1."
-    const chunks: string[] = [];
-    let currentChunk = "";
+    let chunks: string[] = [];
 
-    for (const sentence of sentences) {
-        if ((currentChunk + sentence).length < maxLength) {
-            currentChunk += sentence + ". "; // ✅ Ensure the full sentence is kept
-        } else {
-            chunks.push(currentChunk.trim());
-            currentChunk = sentence + ". "; // ✅ Start a new chunk
-        }
+    // ✅ 1️⃣ Capture introduction text before a list (if any)
+    let match = text.match(/^(.*?)(?=\n\d+\.)/s); // ✅ Capture everything before "1."
+    if (match && match[1].trim()) {
+        chunks.push(match[1].trim()); // ✅ Add introduction as its own message
     }
 
-    if (currentChunk.trim()) chunks.push(currentChunk.trim());
+    // ✅ 2️⃣ Capture numbered list items individually
+    let numberedListItems = text.match(/\d+\..+?(?=\n\d+\.|\n*$)/gs);
+    if (numberedListItems) {
+        chunks.push(...numberedListItems.map(item => item.trim())); // ✅ Each number stays in its own message
+    } else {
+        // ✅ 3️⃣ If no numbered list, fall back to sentence-based splitting
+        let sentences = text.split(/(?<!\d)\. /);
+        let currentChunk = "";
+
+        for (const sentence of sentences) {
+            if ((currentChunk + sentence).length < maxLength) {
+                currentChunk += sentence + ". ";
+            } else {
+                chunks.push(currentChunk.trim());
+                currentChunk = sentence + ". ";
+            }
+        }
+
+        if (currentChunk.trim()) chunks.push(currentChunk.trim());
+    }
+
     return chunks;
 }
-
-export const config = {
-    runtime: "nodejs20.x",  // ✅ Ensure using Node.js runtime
-    maxDuration: 30     // ✅ Allow up to 30 seconds (instead of default 10s)
-};
-

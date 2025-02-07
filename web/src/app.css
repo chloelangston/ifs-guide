@@ -1,11 +1,11 @@
 body {
     font-family: 'Nunito', sans-serif;
+    margin: 0px;
 }
 
 .chat-container {
     max-width: 800px;
     margin: 40px auto;
-    padding: 20px;
     background: #f8f9fa;
     border-radius: 16px;
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
@@ -19,7 +19,13 @@ body {
         min-height: 100vh; /* ✅ Forces full screen on mobile */
         margin: 0;
         border-radius: 0;
-        padding: 20px 4px;
+        padding: 0px 8px;
+    }
+}
+
+@media (min-width: 768px) {
+    .chat-container {
+        padding: 20px;
     }
 }
 
@@ -34,7 +40,7 @@ body {
 @media (max-width: 768px) {
     .messages {
         max-height: none; /* ✅ Allows it to fill space dynamically */
-        padding: 0px;
+        padding: 20px 0px 0px 0px;
     }
 }
 
@@ -96,6 +102,7 @@ body {
     align-items: center;
     padding: 10px;
     /* background: white; */
+    background-color: #f8f9fa;
     /* border-top: 1px solid #ddd; */
     position: sticky;
     bottom: 0;

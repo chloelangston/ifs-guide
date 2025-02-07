@@ -136,12 +136,25 @@
 		isUserScrolling = !isAtBottom;
 	}
 
-    function formatMessage(text: string) {
-        if (!text) return "";
-        return text
-            .replace(/\n/g, '<br>') // ✅ Preserve line breaks
-            .replace(/(\d+)\. /g, '<br><strong>$1.</strong> ') // ✅ Bold numbered lists
-            .replace(/- /g, '<br>• '); // ✅ Convert dashes to bullet points
+    function formatMessage(text: string | null | undefined): string {
+		console.log("text: ", text)
+        if (!text) return ""; // ✅ Ensure it's always a string
+
+        // Convert bold markdown (**word**) into <strong>word</strong>
+        text = text.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+
+        // Convert numbered lists (e.g., "1. Item" -> <ol><li>Item</li></ol>)
+        text = text.replace(/(\d+)\. (.*?)(?=\n|$)/g, "<p>$2</p>"); // Convert to list items
+
+        // Convert unordered lists (e.g., "- Item" -> <ul><li>Item</li></ul>)
+        text = text.replace(/- (.*?)(?=\n|$)/g, "<p>$1</p>"); // Convert to list items
+
+        // Wrap lists in <ul> or <ol> if they exist
+        if (text.includes("<li>")) {
+            text = text.replace(/(<li>.*?<\/li>)+/gs, "<div>$&</div>"); // Wrap in <ul>
+        }
+
+        return text.replace(/\n/g, "<br>"); // Preserve line breaks
     }
 
 </script>
