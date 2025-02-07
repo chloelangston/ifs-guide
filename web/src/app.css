@@ -19,6 +19,7 @@ body {
         min-height: 100vh; /* ✅ Forces full screen on mobile */
         margin: 0;
         border-radius: 0;
+        padding: 20px 4px;
     }
 }
 
@@ -33,6 +34,7 @@ body {
 @media (max-width: 768px) {
     .messages {
         max-height: none; /* ✅ Allows it to fill space dynamically */
+        padding: 0px;
     }
 }
 
@@ -93,14 +95,15 @@ body {
     display: flex;
     align-items: center;
     padding: 10px;
-    background: white;
-    border-top: 1px solid #ddd;
+    /* background: white; */
+    /* border-top: 1px solid #ddd; */
     position: sticky;
     bottom: 0;
+    gap: 8px;
 }
 
-
 .chat-input {
+    background-color: #f1f1f1;
     width: 100%;
     min-height: auto;
     /* min-height: 40px; */
@@ -109,7 +112,8 @@ body {
     padding: 10px;
     font-size: 16px;
     font-family: inherit;
-    border: 1px solid #ccc;
+    /* border: 1px solid #ccc; */
+    border: 0px;
     border-radius: 8px;
     resize: none;
     /* ✅ Disable manual resizing */

@@ -61,16 +61,16 @@ export const POST: RequestHandler = async ({ request }) => {
  * ✅ Utility function to split messages at natural breakpoints
  */
 function splitMessage(text: string, maxLength: number): string[] {
-    const sentences = text.split(/(?<=\.) /); // Split at full stops
+    const sentences = text.split(/(?<!\d)\. /); // ✅ Split at full stops, but NOT at numbers like "1."
     const chunks: string[] = [];
     let currentChunk = "";
 
     for (const sentence of sentences) {
         if ((currentChunk + sentence).length < maxLength) {
-            currentChunk += sentence + " ";
+            currentChunk += sentence + ". "; // ✅ Ensure the full sentence is kept
         } else {
             chunks.push(currentChunk.trim());
-            currentChunk = sentence + " ";
+            currentChunk = sentence + ". "; // ✅ Start a new chunk
         }
     }
 
