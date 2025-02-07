@@ -1,28 +1,9 @@
-import { json, type RequestHandler } from '@sveltejs/kit';
-import { OpenAI } from 'openai';
+import { json, type RequestHandler } from "@sveltejs/kit";
+import OpenAI from "openai";
 
 const openai = new OpenAI({
-    apiKey: process.env.VITE_OPENAI_API_KEY
+    apiKey: process.env.OPENAI_API_KEY
 });
-
-function splitMessage(content: string, maxLength: number = 140): string[] {
-    if (content.length <= maxLength) return [content];
-
-    let sentences = content.match(/[^.!?]+[.!?]/g) || [content]; // ✅ Split at sentence boundaries
-    let parts = [];
-    let currentPart = "";
-
-    for (let sentence of sentences) {
-        if ((currentPart + " " + sentence).length > maxLength) {
-            parts.push(currentPart.trim());
-            currentPart = sentence;
-        } else {
-            currentPart += " " + sentence;
-        }
-    }
-    parts.push(currentPart.trim());
-    return parts;
-}
 
 export const POST: RequestHandler = async ({ request }) => {
     try {
@@ -54,17 +35,19 @@ export const POST: RequestHandler = async ({ request }) => {
             messages: chatMessages
         });
 
-        // ✅ Ensure response is a string, or default to an empty message
-        const aiMessage = response.choices?.[0]?.message?.content ?? "";
+        console.log("response.choices: ", response.choices);
+
+        // ✅ Ensure response is a string
+        const aiMessage = response.choices?.[0]?.message?.content?.trim() ?? "";
 
         if (!aiMessage) {
-            throw new Error("OpenAI returned an empty or null response");
+            throw new Error("OpenAI returned an empty response");
         }
 
-        // ✅ Now safely split the message
+        // ✅ Split message into chunks if too long (optional)
         const shortResponses = splitMessage(aiMessage, 500);
 
-        // ✅ Return them as separate responses
+        // ✅ Return as JSON array for the frontend
         return json(shortResponses.map(text => ({ role: "assistant", content: text })));
 
     } catch (error: any) {
@@ -72,4 +55,25 @@ export const POST: RequestHandler = async ({ request }) => {
         return json({ error: error.message }, { status: 500 });
     }
 };
+
+/**
+ * ✅ Utility function to split messages at natural breakpoints
+ */
+function splitMessage(text: string, maxLength: number): string[] {
+    const sentences = text.split(/(?<=\.) /); // Split at full stops
+    const chunks: string[] = [];
+    let currentChunk = "";
+
+    for (const sentence of sentences) {
+        if ((currentChunk + sentence).length < maxLength) {
+            currentChunk += sentence + " ";
+        } else {
+            chunks.push(currentChunk.trim());
+            currentChunk = sentence + " ";
+        }
+    }
+
+    if (currentChunk.trim()) chunks.push(currentChunk.trim());
+    return chunks;
+}
 

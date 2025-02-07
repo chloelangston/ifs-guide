@@ -135,6 +135,15 @@
 			chatContainer.scrollHeight - chatContainer.scrollTop === chatContainer.clientHeight;
 		isUserScrolling = !isAtBottom;
 	}
+
+    function formatMessage(text: string) {
+        if (!text) return "";
+        return text
+            .replace(/\n/g, '<br>') // ✅ Preserve line breaks
+            .replace(/(\d+)\. /g, '<br><strong>$1.</strong> ') // ✅ Bold numbered lists
+            .replace(/- /g, '<br>• '); // ✅ Convert dashes to bullet points
+    }
+
 </script>
 
 <!-- <div style="display: flex; height: 100vh;"> -->
@@ -150,7 +159,7 @@
 					<img src="/therapist-avatar.png" alt="Therapist Avatar" class="avatar" />
 				{/if}
 				<p class="message {msg.role === 'user' ? 'user-message' : 'therapist-message'}">
-					{msg.content}
+					{@html formatMessage(msg.content)}
 					<span class="timestamp">{msg.timestamp}</span>
 				</p>
 			</div>
