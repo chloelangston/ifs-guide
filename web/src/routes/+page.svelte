@@ -1,35 +1,46 @@
 <script lang="ts">
 	import { writable } from 'svelte/store';
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import PartsMap from '$lib/PartsMap.svelte';
 
-	let input = '';
+	let input = writable('');
 	let messages = writable<{ role: string; content: string; timestamp: string }[]>([]);
 	let isTyping = writable(false);
 	let showOptions = writable(false);
-	let chatContainer: HTMLElement;
-	let isUserScrolling = false; // ✅ Tracks whether user is manually scrolling
+	let messagesContainer: HTMLElement;
 
 	function formatTime() {
 		const now = new Date();
 		return now.getHours() + ':' + now.getMinutes().toString().padStart(2, '0');
 	}
 
+	const scrollToBottom = async () => {
+		if (messagesContainer) {
+			await tick();
+			messagesContainer.scroll({ top: messagesContainer.scrollHeight, behavior: 'smooth' });
+			console.log("now try the other way")
+			messagesContainer.scrollTop = messagesContainer.scrollHeight;
+		}
+
+	};
+
+	const updateMessagesArray = (role: string, content: string) => {
+		messages.update((msgs) => [
+			...msgs,
+			{ role: role, content: content, timestamp: formatTime() }
+		]);
+		scrollToBottom();
+	}
+
 	onMount(() => {
+		console.log('onmount');
 		messages.set([]);
 
 		// ✅ Show typing animation before first message
 		isTyping.set(true);
 
 		setTimeout(() => {
-			messages.update((msgs) => [
-				...msgs,
-				{
-					role: 'assistant',
-					content: 'Hello. I am your Internal Family Systems (IFS) guide.',
-					timestamp: formatTime()
-				}
-			]);
+			updateMessagesArray("assistant", "Hello. I am your Internal Family Systems (IFS) guide.")
 			isTyping.set(false);
 		}, 1500); // ⏳ Typing effect for 1.5s before first message appears
 
@@ -38,15 +49,7 @@
 		}, 2800); // ✅ Start second typing animation before the next message
 
 		setTimeout(() => {
-			messages.update((msgs) => [
-				...msgs,
-				{
-					role: 'assistant',
-					content:
-						"Take a deep breath and notice how you're feeling. If you'd like, share what's on your mind—or choose an option below to get started.",
-					timestamp: formatTime()
-				}
-			]);
+			updateMessagesArray("assistant", "Take a deep breath and notice how you're feeling. If you'd like, share what's on your mind—or choose an option below to get started.")
 			isTyping.set(false);
 		}, 3500); // ⏳ Typing effect for 1.7s before the second message appears
 
@@ -56,14 +59,12 @@
 	});
 
 	async function sendMessage(selectedMessage: string | null = null) {
-		let userMessage = selectedMessage || input;
+		let userMessage = selectedMessage || $input;
 		if (!userMessage) return;
 
-		messages.update((msgs) => [
-			...msgs,
-			{ role: 'user', content: userMessage, timestamp: formatTime() }
-		]);
-		input = '';
+		updateMessagesArray("user", userMessage)
+
+		input.set('');
 		isTyping.set(true);
 		showOptions.set(false);
 
@@ -82,155 +83,122 @@
 				if (Array.isArray(data)) {
 					for (let i = 0; i < data.length; i++) {
 						await new Promise((resolve) => setTimeout(resolve, i === 0 ? 400 : 1200));
-						messages.update((msgs) => [
-							...msgs,
-							{ role: 'assistant', content: data[i].content, timestamp: formatTime() }
-						]);
+						updateMessagesArray("assistant", data[i].content)
 					}
 				} else {
-					messages.update((msgs) => [
-						...msgs,
-						{ role: 'assistant', content: data.content, timestamp: formatTime() }
-					]);
+					updateMessagesArray("assistant", data.content)
 				}
 			} catch (error) {
 				console.error('Invalid JSON response:', text);
-				messages.update((msgs) => [
-					...msgs,
-					{
-						role: 'assistant',
-						content: 'Oops! Something went wrong. Try again.',
-						timestamp: formatTime()
-					}
-				]);
+				updateMessagesArray("assistant", "Oops! Something went wrong. Try again.")
 			}
 		} catch (error) {
 			console.error('API call failed:', error);
-			messages.update((msgs) => [
-				...msgs,
-				{
-					role: 'assistant',
-					content: "I couldn't reach the server. Please try again later.",
-					timestamp: formatTime()
-				}
-			]);
+			updateMessagesArray("assistant", "I couldn't reach the server. Please try again later.")
 		} finally {
 			isTyping.set(false);
 		}
 	}
 
-	let textareaElement: HTMLTextAreaElement;
+	function formatMessage(text: string | null | undefined): string {
+		if (!text || typeof text !== 'string') {
+			console.error('formatMessage received invalid text:', text);
+			return ''; // ✅ Return empty string instead of causing an error
+		}
 
-	function adjustHeight() {
-		if (!textareaElement) return;
-		console.log('textareaElement.scrollHeight: ', textareaElement.scrollHeight);
+		// Convert bold markdown (**word**) into <strong>word</strong>
+		text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
 
-		textareaElement.style.height = 'auto'; // ✅ Reset height to measure correctly
-		textareaElement.style.height = `${textareaElement.scrollHeight}px`; // ✅ Expand naturally
+		// Convert numbered lists (e.g., "1. Item" -> <ol><li>Item</li></ol>)
+		text = text.replace(/(\d+)\. (.*?)(?=\n|$)/g, '<p>$2</p>'); // Convert to list items
+
+		// Convert unordered lists (e.g., "- Item" -> <ul><li>Item</li></ul>)
+		text = text.replace(/- (.*?)(?=\n|$)/g, '<p>$1</p>'); // Convert to list items
+
+		// Wrap lists in <ul> or <ol> if they exist
+		if (text.includes('<li>')) {
+			text = text.replace(/(<li>.*?<\/li>)+/gs, '<div>$&</div>'); // Wrap in <ul>
+		}
+
+		return text.replace(/\n/g, '<br>'); // Preserve line breaks
 	}
-
-	function handleScroll() {
-		if (!chatContainer) return;
-		const isAtBottom =
-			chatContainer.scrollHeight - chatContainer.scrollTop === chatContainer.clientHeight;
-		isUserScrolling = !isAtBottom;
-	}
-
-    function formatMessage(text: string | null | undefined): string {
-		console.log("text: ", text)
-        if (!text) return ""; // ✅ Ensure it's always a string
-
-        // Convert bold markdown (**word**) into <strong>word</strong>
-        text = text.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
-
-        // Convert numbered lists (e.g., "1. Item" -> <ol><li>Item</li></ol>)
-        text = text.replace(/(\d+)\. (.*?)(?=\n|$)/g, "<p>$2</p>"); // Convert to list items
-
-        // Convert unordered lists (e.g., "- Item" -> <ul><li>Item</li></ul>)
-        text = text.replace(/- (.*?)(?=\n|$)/g, "<p>$1</p>"); // Convert to list items
-
-        // Wrap lists in <ul> or <ol> if they exist
-        if (text.includes("<li>")) {
-            text = text.replace(/(<li>.*?<\/li>)+/gs, "<div>$&</div>"); // Wrap in <ul>
-        }
-
-        return text.replace(/\n/g, "<br>"); // Preserve line breaks
-    }
-
 </script>
 
 <!-- <div style="display: flex; height: 100vh;"> -->
 <!-- <PartsMap /> -->
-<div class="chat-container">
-	{console.log('messages: ', $messages)}
-	<div bind:this={chatContainer} class="messages" on:scroll={handleScroll}>
-		{#each $messages as msg}
-			<div
-				class="message-container {msg.role === 'user' ? 'user-container' : 'therapist-container'}"
-			>
-				{#if msg.role === 'assistant'}
-					<img src="/therapist-avatar.png" alt="Therapist Avatar" class="avatar" />
-				{/if}
-				<p class="message {msg.role === 'user' ? 'user-message' : 'therapist-message'}">
-					{@html formatMessage(msg.content)}
-					<span class="timestamp">{msg.timestamp}</span>
-				</p>
-			</div>
-		{/each}
+<div class="app-container">
+	<div class="chat-container">
+		<div bind:this={messagesContainer} class="messages">
+			{#each $messages as msg}
+				<div
+					class="message-container {msg.role === 'user' ? 'user-container' : 'therapist-container'}"
+				>
+					{#if msg.role === 'assistant'}
+						<img src="/therapist-avatar.png" alt="Therapist Avatar" class="avatar" />
+					{/if}
+					<p class="message {msg.role === 'user' ? 'user-message' : 'therapist-message'}">
+						{@html formatMessage(msg.content)}
+						<span class="timestamp">{msg.timestamp}</span>
+					</p>
+				</div>
+			{/each}
 
-		<div class="message-container therapist-container">
-			{#if $isTyping}
-				<img src="/therapist-avatar.png" alt="Therapist Avatar" class="avatar" />
-				<p class="message therapist-message">
-					<span class="typing">
-						<span class="dot"></span>
-						<span class="dot"></span>
-						<span class="dot"></span>
-					</span>
-				</p>
+			<div class="message-container therapist-container">
+				{#if $isTyping}
+					<img src="/therapist-avatar.png" alt="Therapist Avatar" class="avatar" />
+					<p class="message therapist-message">
+						<span class="typing">
+							<span class="dot"></span>
+							<span class="dot"></span>
+							<span class="dot"></span>
+						</span>
+					</p>
+				{/if}
+			</div>
+
+			{#if $showOptions}
+				<div class="user-options">
+					<button
+						class="option-button"
+						on:click={() => sendMessage('Could you tell me about IFS?')}
+					>
+						Could you tell me about IFS?
+					</button>
+					<button
+						class="option-button"
+						on:click={() => sendMessage('Could you lead me through an IFS exercise?')}
+					>
+						Could you lead me through an IFS exercise?
+					</button>
+				</div>
 			{/if}
 		</div>
 
-		{#if $showOptions}
-			<div class="user-options">
-				<button class="option-button" on:click={() => sendMessage('Could you tell me about IFS?')}>
-					Could you tell me about IFS?
-				</button>
-				<button
-					class="option-button"
-					on:click={() => sendMessage('Could you lead me through an IFS exercise?')}
+		<div class="input-container">
+			<textarea
+				bind:value={$input}
+				class="chat-input"
+				placeholder="Type a message..."
+				rows="1"
+				on:keydown={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), sendMessage())}
+			></textarea>
+
+			<button class="send-button" on:click={() => sendMessage()} aria-label="Send message">
+				<svg
+					width="22"
+					height="22"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="#007bff"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
 				>
-					Could you lead me through an IFS exercise?
-				</button>
-			</div>
-		{/if}
-	</div>
-
-	<div class="input-container">
-		<textarea
-			bind:value={input}
-			class="chat-input"
-			placeholder="Type a message..."
-			rows="1"
-			on:input={adjustHeight}
-			on:keydown={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), sendMessage())}
-		></textarea>
-
-		<button class="send-button" on:click={() => sendMessage()} aria-label="Send message">
-			<svg
-				width="22"
-				height="22"
-				viewBox="0 0 24 24"
-				fill="none"
-				stroke="#007bff"
-				stroke-width="2"
-				stroke-linecap="round"
-				stroke-linejoin="round"
-			>
-				<path d="M22 2L11 13"></path>
-				<path d="M22 2L15 22 11 13 2 9z"></path>
-			</svg>
-		</button>
+					<path d="M22 2L11 13"></path>
+					<path d="M22 2L15 22 11 13 2 9z"></path>
+				</svg>
+			</button>
+		</div>
 	</div>
 </div>
 <!-- </div> -->
