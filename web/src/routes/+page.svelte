@@ -155,23 +155,25 @@
 					</p>
 				{/if}
 			</div>
+		</div>
 
+		<div>
 			{#if $showOptions}
-				<div class="user-options">
-					<button
-						class="option-button"
-						on:click={() => sendMessage('Could you tell me about IFS?')}
-					>
-						Could you tell me about IFS?
-					</button>
-					<button
-						class="option-button"
-						on:click={() => sendMessage('Could you lead me through an IFS exercise?')}
-					>
-						Could you lead me through an IFS exercise?
-					</button>
-				</div>
-			{/if}
+			<div class="user-options">
+				<button
+					class="option-button"
+					on:click={() => sendMessage('Could you tell me about IFS?')}
+				>
+					Could you tell me about IFS?
+				</button>
+				<button
+					class="option-button"
+					on:click={() => sendMessage('Could you lead me through an IFS exercise?')}
+				>
+					Could you lead me through an IFS exercise?
+				</button>
+			</div>
+		{/if}
 		</div>
 
 		<div class="input-container">
