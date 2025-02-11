@@ -1,0 +1,8 @@
+{
+    "functions": {
+      "api/chat": {
+        "maxDuration": 60
+      }
+    }
+  }
+  
