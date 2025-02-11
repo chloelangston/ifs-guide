@@ -1,12 +1,17 @@
 import { json, type RequestHandler } from "@sveltejs/kit";
 import OpenAI from "openai";
 
+export const config = {
+    maxDuration: 60
+  };
+
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY
 });
 
 export const POST: RequestHandler = async ({ request }) => {
     try {
+        console.log('API Chat endpoint hit');
         const { messages } = await request.json();
 
         // Ensure the system message is always included
