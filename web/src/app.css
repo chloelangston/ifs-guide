@@ -186,9 +186,8 @@ body {
     align-items: flex-end;
     margin: 10px;
     opacity: 0;
-    /* Start hidden */
     animation: slideIn 0.5s ease-in-out forwards 0.3s;
-    /* ✅ Delayed start */
+    padding-bottom: 40px;
 }
 
 .option-button {

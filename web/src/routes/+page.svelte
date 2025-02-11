@@ -18,19 +18,15 @@
 		if (messagesContainer) {
 			await tick();
 			messagesContainer.scroll({ top: messagesContainer.scrollHeight, behavior: 'smooth' });
-			console.log("now try the other way")
+			console.log('now try the other way');
 			messagesContainer.scrollTop = messagesContainer.scrollHeight;
 		}
-
 	};
 
 	const updateMessagesArray = (role: string, content: string) => {
-		messages.update((msgs) => [
-			...msgs,
-			{ role: role, content: content, timestamp: formatTime() }
-		]);
+		messages.update((msgs) => [...msgs, { role: role, content: content, timestamp: formatTime() }]);
 		scrollToBottom();
-	}
+	};
 
 	onMount(() => {
 		console.log('onmount');
@@ -40,7 +36,7 @@
 		isTyping.set(true);
 
 		setTimeout(() => {
-			updateMessagesArray("assistant", "Hello. I am your Internal Family Systems (IFS) guide.")
+			updateMessagesArray('assistant', 'Hello. I am your Internal Family Systems (IFS) guide.');
 			isTyping.set(false);
 		}, 1500); // ⏳ Typing effect for 1.5s before first message appears
 
@@ -49,7 +45,10 @@
 		}, 2800); // ✅ Start second typing animation before the next message
 
 		setTimeout(() => {
-			updateMessagesArray("assistant", "Take a deep breath and notice how you're feeling. If you'd like, share what's on your mind—or choose an option below to get started.")
+			updateMessagesArray(
+				'assistant',
+				"Take a deep breath and notice how you're feeling. If you'd like, share what's on your mind—or choose an option below to get started."
+			);
 			isTyping.set(false);
 		}, 3500); // ⏳ Typing effect for 1.7s before the second message appears
 
@@ -62,7 +61,7 @@
 		let userMessage = selectedMessage || $input;
 		if (!userMessage) return;
 
-		updateMessagesArray("user", userMessage)
+		updateMessagesArray('user', userMessage);
 
 		input.set('');
 		isTyping.set(true);
@@ -83,18 +82,18 @@
 				if (Array.isArray(data)) {
 					for (let i = 0; i < data.length; i++) {
 						await new Promise((resolve) => setTimeout(resolve, i === 0 ? 400 : 1200));
-						updateMessagesArray("assistant", data[i].content)
+						updateMessagesArray('assistant', data[i].content);
 					}
 				} else {
-					updateMessagesArray("assistant", data.content)
+					updateMessagesArray('assistant', data.content);
 				}
 			} catch (error) {
 				console.error('Invalid JSON response:', text);
-				updateMessagesArray("assistant", "Oops! Something went wrong. Try again.")
+				updateMessagesArray('assistant', 'Oops! Something went wrong. Try again.');
 			}
 		} catch (error) {
 			console.error('API call failed:', error);
-			updateMessagesArray("assistant", "I couldn't reach the server. Please try again later.")
+			updateMessagesArray('assistant', "I couldn't reach the server. Please try again later.");
 		} finally {
 			isTyping.set(false);
 		}
@@ -159,21 +158,21 @@
 
 		<div>
 			{#if $showOptions}
-			<div class="user-options">
-				<button
-					class="option-button"
-					on:click={() => sendMessage('Could you tell me about IFS?')}
-				>
-					Could you tell me about IFS?
-				</button>
-				<button
-					class="option-button"
-					on:click={() => sendMessage('Could you lead me through an IFS exercise?')}
-				>
-					Could you lead me through an IFS exercise?
-				</button>
-			</div>
-		{/if}
+				<div class="user-options">
+					<button
+						class="option-button"
+						on:click={() => sendMessage('Could you tell me about IFS?')}
+					>
+						Could you tell me about IFS?
+					</button>
+					<button
+						class="option-button"
+						on:click={() => sendMessage('Could you lead me through an IFS exercise?')}
+					>
+						Could you lead me through an IFS exercise?
+					</button>
+				</div>
+			{/if}
 		</div>
 
 		<div class="input-container">
