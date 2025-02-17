@@ -6,10 +6,7 @@
 <Modal {onClose}>
 	<h2>About this app</h2>
 	<p>
-		Welcome! This app is an AI-based chatbot that engages with you similar to how an IFS therapist
-		would. It's uses OpenAI's gpt-4-turbo model. It's a prototype so please send feedback <a
-			href="mailto:chloealangston@gmail.com">here</a
-		>!
+		Welcome! This AI-powered chatbot is designed to guide you through Internal Family Systems (IFS) exercises, offering structured prompts and reflections. It is not a therapist, but rather a tool to help you engage with IFS concepts between sessions. The app uses OpenAI’s GPT-4 Turbo and is currently a prototype. Please send any feedback <a target="_blank" rel="noopener noreferrer" href="mailto:chloealangston@gmail.com">here</a>!
 	</p>
 	<ul class="about-list">
 		<li class="about-list-item">This app is for:</li>
@@ -29,7 +26,7 @@
 					<path d="M20 6L9 17L4 12"></path>
 				</svg>
 			</span>
-			Being led through guided exercises to explore your feelings and patterns.
+			Guided exercises to explore your feelings and patterns.
 		</li>
 		<li class="about-list-item">
 			<span class="icon">
@@ -47,7 +44,7 @@
 					<path d="M20 6L9 17L4 12"></path>
 				</svg>
 			</span>
-			Being used in between sessions with a professional therapist.
+			Supporting your IFS journey between sessions with a therapist.
 		</li>
 		<li class="about-list-item">
 			<span class="icon">
@@ -65,7 +62,7 @@
 					<path d="M20 6L9 17L4 12"></path>
 				</svg>
 			</span>
-			Learning about Internal Family Systems.
+			Learning about Internal Family Systems in an interactive way.
 		</li>
 	</ul>
 	<ul class="about-list">
@@ -87,7 +84,7 @@
 					<line x1="6" y1="6" x2="18" y2="18"></line>
 				</svg>
 			</span>
-			Saving your data. It will clear when you refresh.
+			Saving your data: everything clears when you refresh.
 		</li>
 		<li class="about-list-item">
 			<span class="icon">
@@ -106,7 +103,7 @@
 					<line x1="6" y1="6" x2="18" y2="18"></line>
 				</svg>
 			</span>
-			Engaging with deep trauma. It will encourage you to speak with your therapist.
+            Processing deep trauma: it will encourage you to talk to your therapist.
 		</li>
 
 		<li class="about-list-item">
@@ -126,7 +123,7 @@
 					<line x1="6" y1="6" x2="18" y2="18"></line>
 				</svg>
 			</span>
-			Discussing self-harm or harm to others. It will encourage you to seek emergency services.
+			Discussing self-harm or harm to others: it will direct you to emergency services.
 		</li>
 	</ul>
 </Modal>
