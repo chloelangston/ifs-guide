@@ -12,14 +12,14 @@ Features
 
 This project is currently focused on the web version, with plans for a native app in the future.
 
-web/ → Contains the web-based application (start the server here).
-native/ → Placeholder for future native development.
+- web/ → Contains the web-based application (start the server here).
+- native/ → Placeholder for future native development.
 
 ## Developing (web)
 
-Navigate to the web directory with `cd web`
-Install dependencies with `npm install`
-Create a .env file and paste your `VITE_OPENAI_API_KEY` key
+- Navigate to the web directory with `cd web`
+- Install dependencies with `npm install`
+- Create a .env file and paste your `VITE_OPENAI_API_KEY` key
 
 Start a development server:
 ```bash
