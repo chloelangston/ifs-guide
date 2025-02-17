@@ -2,14 +2,24 @@
 A chat application designed as a guide for Internal Family Systems (IFS) excercises. The app provides a session-based chat to explore different "parts" of oneself, without storing user data.
 
 Features
-✅ Chat-based IFS guide with daily exercises
-✅ No data storage, chat resets on refresh
-✅ Simple and intuitive UI
-✅ Built with Svelte, Node.js, and TS
 
-## Developing
+- ✅ Chat-based IFS guide with daily exercises
+- ✅ No data storage, chat resets on refresh
+- ✅ Simple and intuitive UI
+- ✅ Built with Svelte, Node.js, and TS
 
+## Project Structure
+
+This project is currently focused on the web version, with plans for a native app in the future.
+
+web/ → Contains the web-based application (start the server here).
+native/ → Placeholder for future native development.
+
+## Developing (web)
+
+Navigate to the web directory with `cd web`
 Install dependencies with `npm install`
+Create a .env file and paste your `VITE_OPENAI_API_KEY` key
 
 Start a development server:
 ```bash
