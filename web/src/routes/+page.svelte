@@ -9,31 +9,19 @@
 	import Menu from '$lib/components/Menu.svelte';
 
 	type PartDataType = {
-		color?: string,
-		name?: string,
-	}
+		color?: string;
+		name?: string;
+	};
 
 	let input = writable('');
-	let messages = writable<{ role: string; content: string; timestamp: string, partData: PartDataType }[]>([]);
+	let messages = writable<
+		{ role: string; content: string; timestamp: string; partData: PartDataType }[]
+	>([]);
 	let isTyping = writable(false);
 	let showOptions = writable(false);
 	let messagesContainer: HTMLElement;
 	let openModal: string | null = null;
-	let showMenu = false;
-	let isClosing = false;
-
-	function toggleMenu() {
-		if (showMenu) {
-			isClosing = true;
-		} else {
-			showMenu = true;
-			isClosing = false;
-		}
-	}
-
-	function handleModalClose() {
-		openModal = null;
-	}
+	let openAboutModal = false;
 
 	function formatTime() {
 		const now = new Date();
@@ -49,12 +37,14 @@
 	};
 
 	const updateMessagesArray = (role: string, content: string, partData?: PartDataType) => {
-		messages.update((msgs) => [...msgs, { role: role, content: content, timestamp: formatTime(), partData: partData || {} }]);
+		messages.update((msgs) => [
+			...msgs,
+			{ role: role, content: content, timestamp: formatTime(), partData: partData || {} }
+		]);
 		scrollToBottom();
 	};
 
 	onMount(() => {
-		console.log('openModal: ', openModal);
 		messages.set([]);
 
 		// ✅ Show typing animation before first message
@@ -83,12 +73,12 @@
 	});
 
 	function handlePartResponse(part: any) {
-		console.log('handling part response!');
-		console.log('part: ', part);
-		// Save the part to cookies
 		savePartToCookies(part);
 
-		updateMessagesArray("part", "Find me in your Notes!", {color: part.color || "black", name: part.name});
+		updateMessagesArray('part', 'Find me in your Notes!', {
+			color: part.color || 'black',
+			name: part.name
+		});
 	}
 
 	async function createGuideMessage(text: string) {
@@ -128,9 +118,7 @@
 
 			// ✅ Check if the response is valid JSON
 			const text = await res.text();
-			console.log('text: ', text);
 			const textAndJson = separateTextAndJson(text);
-			console.log('textAndJson: ', textAndJson);
 			if (textAndJson.json) handlePartResponse(textAndJson.json);
 			createGuideMessage(textAndJson.text);
 		} catch (error) {
@@ -163,31 +151,30 @@
 
 		return text.replace(/\n/g, ''); // Preserve line breaks
 	}
-	$: isAboutModalOpen = openModal === 'about';
-	$: isNotesModalOpen = openModal === 'notes';
 </script>
 
 <!-- <PartsMap /> -->
 <div class="app-container">
-	<Menu {showMenu} {toggleMenu} {isClosing} setOpenModal={(value) => (openModal = value)} />
+	<div
+		role="button"
+		class="sticky-header question-icon"
+		on:click={() => (openAboutModal = true)}
+		on:keydown={(event) => {
+			if (event.key === 'Enter' || event.key === ' ') openAboutModal = true;
+		}}
+		tabindex="0"
+	>
+		<div>?</div>
+	</div>
 	<div class="chat-container">
 		<div bind:this={messagesContainer} class="messages">
 			{#each $messages as msg}
-				<div
-					class={`message-container ${msg.role}-container`}
-				>
+				<div class={`message-container ${msg.role}-container`}>
 					{#if msg.role === 'assistant'}
 						<img src="/therapist-avatar.png" alt="Therapist Avatar" class="avatar" />
 					{/if}
-					{#if msg.role === 'part'}
-						<PartCircle part={msg.partData} />
-					{/if}
 					<p class={`message ${msg.role}-message`}>
-						{#if msg.role === 'part'}
-							<button on:click={() => openModal = "notes"}>{msg.content}</button>
-						{:else}
-							{@html formatMessage(msg.content)}
-						{/if}
+						{@html formatMessage(msg.content)}
 						<span class="timestamp">{msg.timestamp}</span>
 					</p>
 				</div>
@@ -253,12 +240,8 @@
 		</div>
 	</div>
 
-	{#if isAboutModalOpen}
-		<AboutModal onClose={handleModalClose} />
-	{/if}
-
-	{#if isNotesModalOpen}
-		<NotesModal onClose={handleModalClose} />
+	{#if openAboutModal}
+		<AboutModal onClose={() => (openAboutModal = false)} />
 	{/if}
 </div>
 <!-- </div> -->
