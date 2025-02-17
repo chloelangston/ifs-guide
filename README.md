@@ -1,23 +1,17 @@
-# sv
+## IFS Chat App
+A chat application designed as a guide for Internal Family Systems (IFS) excercises. The app provides a session-based chat to explore different "parts" of oneself, without storing user data.
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
-
-## Creating a project
-
-If you're seeing this, you've probably already done this step. Congrats!
-
-```bash
-# create a new project in the current directory
-npx sv create
-
-# create a new project in my-app
-npx sv create my-app
-```
+Features
+✅ Chat-based IFS guide with daily exercises
+✅ No data storage, chat resets on refresh
+✅ Simple and intuitive UI
+✅ Built with Svelte, Node.js, and TS
 
 ## Developing
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+Install dependencies with `npm install`
 
+Start a development server:
 ```bash
 npm run dev
 
@@ -27,7 +21,7 @@ npm run dev -- --open
 
 ## Building
 
-To create a production version of your app:
+To create a production version:
 
 ```bash
 npm run build
@@ -35,4 +29,8 @@ npm run build
 
 You can preview the production build with `npm run preview`.
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+## Contributing
+Contributions are welcome! Feel free to submit issues or open pull requests.
+
+License
+This project is open-source under the MIT License.

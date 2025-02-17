@@ -3,7 +3,7 @@ import * as cookie from 'cookie';
 /**
  * @param {any} part
  */
-export function savePartToCookies(part) {
+export function savePartToCookies(part: any) {
     let savedParts = getPartsFromCookies();
     savedParts.push(part);
     document.cookie = cookie.serialize('parts', JSON.stringify(savedParts), {

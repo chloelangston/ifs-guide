@@ -1,11 +1,9 @@
 <script lang="ts">
 	import { writable } from 'svelte/store';
 	import { onMount, tick } from 'svelte';
-	import PartCircle from '$lib/components/PartCircle.svelte';
-	import { savePartToCookies } from '$lib/utils/cookies';
-	import { separateTextAndJson } from '$lib/utils/json';
+	import { formatMessage } from '$lib/utils/messages';
+	import { formatTime } from '$lib/utils/time';
 	import AboutModal from '$lib/modals/AboutModal.svelte';
-	import NotesModal from '$lib/modals/NotesModal.svelte';
 	import Menu from '$lib/components/Menu.svelte';
 
 	type PartDataType = {
@@ -20,14 +18,9 @@
 	let isTyping = writable(false);
 	let showOptions = writable(false);
 	let messagesContainer: HTMLElement;
-	let openModal: string | null = null;
 	let openAboutModal = false;
 
-	function formatTime() {
-		const now = new Date();
-		return now.getHours() + ':' + now.getMinutes().toString().padStart(2, '0');
-	}
-
+	// Ensure user always sees the latest message
 	const scrollToBottom = async () => {
 		if (messagesContainer) {
 			await tick();
@@ -36,6 +29,7 @@
 		}
 	};
 
+	// Update list of messages when new message is sent or received
 	const updateMessagesArray = (role: string, content: string, partData?: PartDataType) => {
 		messages.update((msgs) => [
 			...msgs,
@@ -44,20 +38,21 @@
 		scrollToBottom();
 	};
 
+	// Show initial messages from the assistant
 	onMount(() => {
 		messages.set([]);
 
-		// ✅ Show typing animation before first message
+		// Show typing animation before first message
 		isTyping.set(true);
 
 		setTimeout(() => {
 			updateMessagesArray('assistant', 'Hello. I am your Internal Family Systems (IFS) guide.');
 			isTyping.set(false);
-		}, 1500); // ⏳ Typing effect for 1.5s before first message appears
+		}, 1500);
 
 		setTimeout(() => {
 			isTyping.set(true);
-		}, 2800); // ✅ Start second typing animation before the next message
+		}, 2800);
 
 		setTimeout(() => {
 			updateMessagesArray(
@@ -65,23 +60,14 @@
 				"Take a deep breath and notice how you're feeling. If you'd like, share what's on your mind—or choose an option below to get started."
 			);
 			isTyping.set(false);
-		}, 3500); // ⏳ Typing effect for 1.7s before the second message appears
+		}, 3500);
 
 		setTimeout(() => {
-			showOptions.set(true); // ✅ Only show options after the second message
+			showOptions.set(true);
 		}, 4500);
 	});
 
-	function handlePartResponse(part: any) {
-		savePartToCookies(part);
-
-		updateMessagesArray('part', 'Find me in your Notes!', {
-			color: part.color || 'black',
-			name: part.name
-		});
-	}
-
-	async function createGuideMessage(text: string) {
+	async function createAssistantMessage(text: string) {
 		try {
 			const data = JSON.parse(text);
 
@@ -104,7 +90,6 @@
 		if (!userMessage) return;
 
 		updateMessagesArray('user', userMessage);
-
 		input.set('');
 		isTyping.set(true);
 		showOptions.set(false);
@@ -116,11 +101,8 @@
 				body: JSON.stringify({ messages: [...$messages, { role: 'user', content: userMessage }] })
 			});
 
-			// ✅ Check if the response is valid JSON
 			const text = await res.text();
-			const textAndJson = separateTextAndJson(text);
-			if (textAndJson.json) handlePartResponse(textAndJson.json);
-			createGuideMessage(textAndJson.text);
+			createAssistantMessage(text);
 		} catch (error) {
 			console.error('API call failed:', error);
 			updateMessagesArray('assistant', "I couldn't reach the server. Please try again later.");
@@ -128,44 +110,10 @@
 			isTyping.set(false);
 		}
 	}
-
-	function formatMessage(text: string | null | undefined): string {
-		if (!text || typeof text !== 'string') {
-			console.error('formatMessage received invalid text:', text);
-			return ''; // ✅ Return empty string instead of causing an error
-		}
-
-		// Convert bold markdown (**word**) into <strong>word</strong>
-		text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-
-		// Convert numbered lists (e.g., "1. Item" -> <ol><li>Item</li></ol>)
-		text = text.replace(/(\d+)\. (.*?)(?=\n|$)/g, '<p>$2</p>'); // Convert to list items
-
-		// Convert unordered lists (e.g., "- Item" -> <ul><li>Item</li></ul>)
-		text = text.replace(/- (.*?)(?=\n|$)/g, '<p>$1</p>'); // Convert to list items
-
-		// Wrap lists in <ul> or <ol> if they exist
-		if (text.includes('<li>')) {
-			text = text.replace(/(<li>.*?<\/li>)+/gs, '<div>$&</div>'); // Wrap in <ul>
-		}
-
-		return text.replace(/\n/g, ''); // Preserve line breaks
-	}
 </script>
 
-<!-- <PartsMap /> -->
 <div class="app-container">
-	<div
-		role="button"
-		class="sticky-header question-icon"
-		on:click={() => (openAboutModal = true)}
-		on:keydown={(event) => {
-			if (event.key === 'Enter' || event.key === ' ') openAboutModal = true;
-		}}
-		tabindex="0"
-	>
-		<div>?</div>
-	</div>
+	<Menu bind:openAboutModal />
 	<div class="chat-container">
 		<div bind:this={messagesContainer} class="messages">
 			{#each $messages as msg}
@@ -244,4 +192,3 @@
 		<AboutModal onClose={() => (openAboutModal = false)} />
 	{/if}
 </div>
-<!-- </div> -->

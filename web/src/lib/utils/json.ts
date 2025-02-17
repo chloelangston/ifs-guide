@@ -1,7 +1,7 @@
 /**
  * @param {string} data
  */
-export function separateTextAndJson(data) {
+export function separateTextAndJson(data: string) {
     console.log("Original data: ", data);
 
     // Extract the JSON block using regex
